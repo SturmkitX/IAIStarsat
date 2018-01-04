@@ -1,0 +1,24 @@
+The Problem:
+A king has K wise men. He wants to know which one of his men is the wisest. So, he marks each one's forehead
+with a color (black or white). Then, he asks each one of his men which color is his forehead.
+Sources usually exemplify the 3-wise men problem:
+- the first one says "I don't know whether my forehead is white or not"
+- the second one says the same thing
+- the last one says "I am sure that my forehead is white".
+
+We must create a program that generates input for the kSAT tool in order to solve this problem for a given
+number of wise men.
+
+
+The Solution:
+Let's start with the solution for the 2-wise men problem. We know 3 things (denote the 2 men with A and B):
+1. A knows that if A doesn't have a white spot, B will know that A doesn't have a white spot.
+2. A knows that B knows that either A or B has a white spot.
+3. A knows that B doesn't know whether or not B has a white spot.
+
+By using the knowledge presented above and a couple of propositional modal logic axioms, we are able to
+show that it is impossible for man A not to know what color his forehead is.
+Imagine the world as a graph. One way of representing it would be to assemble all the well-formed formulas
+into a complete graph. But this approach would generate a lot of useless redundancy. Instead, we could
+represent only the facts that come from person A's point of view. This eliminates redundancy and reduces
+computation time, without affecting results.
