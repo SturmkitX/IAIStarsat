@@ -1,0 +1,818 @@
+\documentclass[12pt]{report}
+
+\usepackage{alltt}
+\usepackage{named}
+\usepackage{latexsym} 
+%\usepackage{fullpage}
+
+\newenvironment{mydescription}{%
+\begin{list}{}{%
+	\setlength{\leftmargin}{0pt}
+	\setlength{\parsep}{0.5ex plus0.2ex minus0.2ex}
+	\setlength{\itemsep}{0.3ex}
+	\setlength{\labelwidth}{0pt}
+	\renewcommand{\makelabel}[1]{\textbf{##1}}}}
+{\end{list}}
+
+\title{\textbf{*SAT user's manual \\ Version 1.3 \\ ****DRAFT***}}
+\date{\ }
+\author{Armando Tacchella}
+
+\begin{document}
+
+\maketitle
+\clearpage
+
+\tableofcontents
+\clearpage
+
+\chapter{Installing *SAT}
+
+\section{Requirements}
+\label{sec:requirements}
+
+To complete the installation steps and run *SAT your system 
+must be equipped with the following tools (standard in most Linux
+distributions):
+\begin{itemize}
+\item GNU version of the {\tt make} utility;
+\item GNU version of the {\tt m4} utility (GLU library 
+\texttt{configure} scripts require it to work properly);
+\item GNU C compiler {\tt gcc}; 
+\item GNU automatic lexer/parser generators {\tt flex} and {\tt bison}; 
+\end{itemize}
+If you do not have these tools installed on your machine, have a look 
+at:
+\begin{alltt}
+http://www.gnu.org/software/software.html
+\end{alltt} 
+for instructions on how to download them. You might also succeed in
+installing and running *SAT using different tools, but this will
+require you to undertake the nontrivial process of 
+modifying the installation files. 
+
+\section{Preliminaries}
+\label{sec:preliminaries}
+
+In the following, assume that you have downloaded the archive 
+{\tt StarSAT.tar.gz} in the directory {\tt /usr/projects}.  You 
+need to expand it first with the command:
+\begin{alltt} 
+   > cd /usr/projects
+   /usr/projects> tar -xvzf StarSAT.tar.gz
+\end{alltt}
+This creates the directory {\tt /usr/projects/StarSAT} containing the
+following files and directories:
+\begin{description}
+\item{\tt README} including contact information, a disclaimer and a
+short copyright notice;
+\item{\tt LICENSE} *SAT is distributed under the terms of the GNU General
+Public License
+\item{\tt MakeGLU} a script that takes care of building GLU;
+\item{\tt Manual/} the directory containing the 
+postscript file of this manual;
+\item{\tt glu-1.3/} the directory containing the GLU source code;
+\item{\tt src-1.3/} the directory containing the *SAT source code.
+\end{description}
+
+\section{Compiling GLU}
+\label{sec:glu}
+
+Before compiling *SAT you need to build and install GLU. The script
+{\tt MakeGLU} takes care of this process. All you need to do is run
+it:
+\begin{alltt}
+/usr/projects>cd StarSAT
+/usr/projects/StarSAT>MakeGLU
+\end{alltt}
+{\tt MakeGLU} assumes that the GNU programs {\tt make}, {\tt m4} and
+{\tt gcc}  are available in the current path. 
+If this is not the case, {\tt MakeGLU} will not work. 
+Whatever your local installation of the above GNU tools is (for example
+{\tt /usr/gnu/bin/}) you are encouraged to add it to your {\tt
+PATH} variable. To do so:
+\begin{alltt}
+bash\$>export PATH=\$PATH:/usr/gnu/bin
+csh\$>setenv PATH \$PATH:/ust/gnu/bin
+\end{alltt}
+
+At the end of the script you should find two more directories, named
+{\tt include} (GLU header files) and {\tt lib} (GLU library object code). 
+Now you are ready to compile *SAT.
+
+\section{Compiling *SAT}
+\label{sec:starsat}
+
+*SAT comes with a makefile that takes care of compiling all *SAT
+modules and linking them into a single executable. 
+The following commands will do:
+\begin{alltt}
+/usr/projects/StarSAT>cd src
+/usr/projects/StarSAT/src>make depend
+/usr/projects/StarSAT/src>make 
+\end{alltt}
+
+The {\tt make depend} command will not generate any
+executable, but you are required to run it after changes to the
+{\tt makefile} (see section~\ref{sec:options} for more details) and
+for any first-time installation of *SAT.
+Running {\tt make} might generate different executables according to the settings
+specified in the {\tt makefile}. By default, using the {\tt makefile}
+that comes along *SAT distribution, the executable {\tt kSAT}
+is generated (satisfiability in multimodal logic K(m)). The default input
+syntax is LISP-like and closely resembles the one described in the
+KRSS document~\cite{pat93a} (see section~\ref{sec:input} for more
+details).
+
+Whenever you need to re-build *SAT, possibly with different
+compile-time options, you need to run:
+\begin{alltt}
+/usr/projects/StarSAT/src>make clean
+\end{alltt}
+which forces recompilation of every module with the new options. Be
+careful since {\tt make clean} clears each executable so far generated
+as well as any {\tt emacs} backup file (like {\tt file.txt\symbol{126}})!
+
+\section{Compile time options}
+\label{sec:options}
+
+There are some sections of the {\tt makefile} that you might 
+edit in order to get different compile-time options
+built in *SAT. Since *SAT is an on-going research project, some of its
+features may be not fully documented yet in this manual. They will get
+support as soon as they are well established. 
+
+The section in the {\tt makefile} that you may wish to edit are:
+\begin{description}
+	\item{\tt INPUT SYNTAX} you can choose what kind of
+	input syntax is compiled in *SAT. There are four input
+	syntaxes available at the moment (they are described in 
+	detail in section~\ref{sec:input}). For example the default
+	KRSS-like input syntax declarations are:
+	\begin{alltt}
+		PARSER = alc.y
+		LEXER = alc.lex
+		SYNTAX = -DNARY 
+	\end{alltt}
+	The declarations {\tt PARSER} and {\tt LEXER} choose the
+	parser and lexer modules to be loaded into the *SAT
+	executable. The modules {\tt alc.y}, {\tt c.y}, {\tt lwb.y},
+	{\tt tptp.y} can be assigned to {\tt PARSER}, and the
+	corresponding {\tt .lex} files can be assigned to {\tt
+	LEXER}. Remember that:
+	\begin{itemize}
+		\item the declarations {\tt PARSER} and {\tt LEXER}
+		\textit{must} coincide, modulo the extensions;
+		\item there can be \textit{only one} parser/lexer
+ 		built into *SAT at the same time.
+	\end{itemize}
+	The declaration {\tt SYNTAX} may be either
+	{\tt -DNARY} or {\tt -DBARY}. TPTP syntax declaration bears an additional
+	{\tt -DPURGE\_COMMENTS} that tells to *SAT to ignore comment
+	lines in the header of the input formula. Using {\tt -DNARY}, 
+	formulae are internally parsed as trees where {\tt AND} and {\tt OR}
+	nodes have an arbitrary number of sons ({\tt alc} and {\tt c} modules). 
+	When {\tt -DBARY} is used, {\tt AND} and {\tt OR} nodes in the parse
+	tree do not have more than two sons ({\tt tptp} and {\tt lwb}
+	modules). The {\tt makefile} that comes along *SAT
+	distribution has ready-to-play sets of declarations for all the four
+	input syntaxes. You just need to comment each set of
+	declarations, but the one that you want to use.
+	
+	\item{\tt DIRECTIVES} The purpose of these compile-time
+	directives is to squeeze more performance out of the box.
+	You can choose among different
+	settings. The first setting, labeled {\tt RGFK}, is best suited for
+	random generated formulae and, specifically, for extended CNF
+	formulae and Tableaux99/2000 benchmarks suites. 
+	The second one, labeled {\tt HGFK},
+	is best suited for hand generated formulae and, specifically,
+	for Tableaux98 benchmarks suite. 
+	Running *SAT always with the same	
+	setting will not hurt, but you might not be able to squeeze top
+	performance out of it. There is also a ``bare bones'' setting
+	that avoids all kinds of compile time add-ons in *SAT. The
+	default setting is {\tt RGFK}, you might choose a different one
+	by commenting in and out the corresponding lines in {\tt makefile}. 
+
+	\item{\tt TARGET EXECUTABLE} four different executables might
+	be generated during the build process:
+	\begin{description}
+		\item{\tt kSAT}    Satisfiability in logic K(m) 
+		\item{\tt kPROVE}  Provability in logic K(m) (the input formula is negated)
+		\item{\tt eSAT}    Satisfiability in logic E(m)
+		\item{\tt ta4eSAT} Translational approach for satisfiability in logic E
+		(the input formula is translated to an equivalent satisfiability
+		test in K(2))
+	\end{description}
+	The {\tt makefile} that comes along *SAT
+	distribution has ready-to-play sets of declarations for all the four
+	target executables. You just need to comment each set of
+	declarations, but the one that you want to use.
+\end{description}	
+
+\chapter{Running *SAT}
+
+\section{At first glance}
+\label{sec:first}
+
+If you run any of the executables generated by the {\tt makefile} (see
+section~\ref{sec:options}) without specifying any command line
+parameters you get a help banner describing *SAT usage. 
+The first few lines look as follows:
+\begin{alltt}
+\footnotesize
+> kSAT
+
+Welcome to *SAT, a platform for experimenting with SAT-based procedures!
+Usage: kSAT [<Options>] <Input_file>
+...
+\end{alltt}
+More lines of explanation follow and we will go thru them in the
+section~\ref{sec:params}. In the remaining of this section
+we are going to outline a simple example using the
+default syntax and options.
+
+We start with writing 
+the file {\tt wff.alc}\footnote{%
+This file can also be found in {\tt StarSAT/src-1.3}}
+that contains just the following expression:
+\begin{alltt}
+\footnotesize
+(NOT (IMP (AND (ALL R0 (IMP C0 C1)) (ALL R0 C0)) (ALL R0 C1)))
+\end{alltt}
+corresponding to the formula $\varphi = \neg(( \Box_0 (c_0 \supset c_1) \wedge \Box_0
+c_0) \supset \Box_0 c_1)$. Clearly, $\varphi$ is not satisfiable in
+logic K. In order to have  {\tt kSAT} prove this fact, all we need to
+do is to type:
+\begin{alltt}
+\footnotesize
+>kSAT wff.alc
+\end{alltt}
+and we get an answer that looks like:
+\begin{alltt}
+\footnotesize
+Sat, Btime, Dtime, ConsChecks, FConsChecks, EPcalls, EPbackts, Unit,
+Pure, MSplit, DSplit, TSplit, Assign, Backts, AddVar, Macc, Msucc, 
+MaTime, Mstore, Mtrash, MsTime, Dacc, Dsucc, DaTime, Dstore, Dtrash, 
+DsTime, MaxMem, CacheMem
+0, 0.01 sec, 0.00 sec, 1, 1, 0, 0, 7, 0, 0, 0, 0, 1, 0, 2, 0, 0, 0, 0, 
+0.00, 0, 0, 0, 0 ,1, 0.00, 0, 135, 3
+\end{alltt}
+meaning that the formula is unsatisfiable ({\tt 0} in the field {\tt Sat}). The remaining
+data regards *SAT run time, number of consistency checks, etc. The
+meaning of these output values will be explained later in
+section~\ref{sec:output}. *SAT prints a compact description of the output data 
+by default. This is adequate when collecting data
+from large scale experimentation but a more ``human-oriented'' output can be
+obtained with the {\tt -r2} option (``enRich'' output). The command:
+\begin{alltt}
+\footnotesize
+>kSAT -r2 wff.alc
+\end{alltt}
+yields the following output:
+\begin{alltt}
+\footnotesize
+The formula was unsatisfiable
+--------------------TIMINGS
+Parse time        0.00 sec
+Preprocess time   0.00 sec
+Translate time    0.00 sec
+Build time        0.00 sec
+Decision time     0.00 sec
+--------------------GENERAL
+Consistency checks         1
+Failed consistency checks  1
+Early Pruning (calls)      0
+Early Pruning (backtracks) 0
+--------------------DAVIS PUTNAM
+Unit propagations  7
+Pure literals      0
+Splits             0
+  on modal atoms   0
+  on added var.    0
+Assignments found  1
+Bactracks          0
+--------------------CNF CONVERSION
+Added variables   2
+--------------------CACHING
+Cache accesses      0
+Cache successes     0
+Total search time   0 (msec)
+Items stored        0 (trashing ratio 0.00)
+Totale store time   0 (msec)
+Dependencies tried  0
+Dependencies found  0
+Total search time   0 (msec)
+Dependecies stored  1 (trashing ratio 0.00)
+Total store time    0 (msec)
+--------------------MEMORY
+Maximum memory allocated by SATO               135 Kb
+Total memory allocated for caching             3 Kb
+\end{alltt}
+
+\section{Input syntaxes}
+\label{sec:input}
+
+We start our journey into *SAT world talking about the input syntaxes
+that might be used to present problems to the system. 
+
+\subsection{LISP syntax}
+
+This syntax was used in the very first implementation of KsatLisp (\cite{giu96b}) the
+LISP ancestor of *SAT. It is derived from the basic KRSS syntax
+(\cite{pat93a}) for knowledge representation. The grammar outline follows:
+\begin{alltt}
+\small
+formula      ::= boolean_expr |
+                 rule_expr    |
+                 atomic_expr;
+boolean_expr ::= (unary_op formula) |
+                 (binary_op formula formula) |
+                 (nary_op formula formula_list);
+formula_list ::= formula form_list | \(\epsilon\); 
+rule_expr    ::= (rule_op rule formula);
+atomic_expr  ::= atom | TOP | BOTTOM;
+unary_op     ::= NOT;
+binary_op    ::= IFF | IMP;
+nary_op      ::= AND | OR;
+rule_op      ::= ALL | SOME;
+atom         ::= C0 | C[1-9][0-9]*
+rule         ::= R0 | R[1-9][0-9]*
+\end{alltt} 
+
+\subsection{C syntax}
+
+This syntax was used by the first C implementation of Ksat,
+KsatC. *SAT retains this syntax for backward compatibility.
+This is also the default syntax used by the formula generator that you
+can download from *SAT page. Files are generated according to the syntax:
+
+\begin{alltt}
+\small
+input        ::= wff = formula; 
+formula      ::= boolean_expr |
+                 rule_expr    |
+                 atomic_expr;
+boolean_expr ::= boolop ( formula other ) |
+                       - boolop ( formula other );
+other        ::= formula other | \(\epsilon\); 
+rule_expr    ::= boxop agent ( formula ) |
+		   - boxop agent ( formula );
+atomic_expr  ::= [1-9][0-9]* | -[1-9][0-9] | T | F;
+boxop        ::= #;
+boolop       ::= v | ^;
+agent        ::= (0|[1-9][0-9]*)
+\end{alltt}
+
+
+\subsection{LWB syntax}
+
+*SAT reads LWB syntax for modal formulae. This syntax was introduced
+in the LWB system (\cite{heu96a}) and used in Tableaux98 competition benchmarks (\cite{tab98}).
+The rules used by *SAT are more strict than what is allowed
+by LWB, since they require \textit{all} formulas to be
+parenthesized, even those beginning with the negation symbol.
+
+\subsection{TPTP syntax}
+
+This syntax has been first introduced in Tableaux99 (\cite{mas99a}) competition. *SAT
+understands this syntax to its full extent, except the ``axiom''
+declarations since, at the moment, *SAT is not able to deal with
+axioms.
+
+\section{Command line parameters}
+\label{sec:params}
+
+*SAT behavior can be influenced by several command line parameters. A
+short explanation about such parameters is given by the *SAT
+help banner. At the end of the banner, the default value for each 
+parameter described in this section is displayed.
+In this section we elaborate a little on the short descriptions
+given in the banner.
+
+\subsection{Davis Putnam parameters} 
+
+In this subsection we discuss about the parameters that influence directly
+the behavior of the embedded Davis-Putnam algorithm and that can be
+used in the context of modal logics. There are more parameters that
+affect the embedded propositional solver, but not all of them might be
+used in *SAT when reasoning in modal logics (they are discussed next,
+in subsection~\ref{sub:proponly}). In the current version of *SAT, the
+embedded Davis-Putnam solver is SATO 3.2 (\cite{zha97a}).
+
+We are now concerned with the parameters described in the following
+portion of the help banner:
+\begin{alltt}
+\scriptsize
+********** SPLITTING **********
+   -s<n>    : choose a different splitting heuristic (n = 1..6):
+               n = 1 MOM strategy to all active variables
+               n = 2 MOM strategy to all active variables in the
+                     shortest clauses
+               n = 3 choose the min variable in the first shortest
+                      clause (sign = CHOICE1)
+               n = 4 choose a variable in a shortest clause using
+                     occurrence as the second criterion (sign = CHOICE1)
+               n = 5 choose a variable with the highest occurrence
+                     (sign = CHOICE1)
+               n = 6 choose a variable with the highest occurrence
+                     (sign = ?)
+   -l<n>    : choose a different MOM strategy (n = 1..3 - 11..13 - 21):
+               n < 11       original SATO weighting:
+                   n=1 sign =(neg_count>pos_count)? CHOICE1 : CHOICE2;
+                   n=2 sign = FF
+                   n=3 sign = TT
+               11 <= n < 21 clauses length does not matter (sign as n - 10)
+               n = 21       Boehm's weight and sign
+   -v       : splitting bias becomes CHOICE1 = TT, CHOICE2 = FF
+\end{alltt}   
+Parameters {\tt -s<n>} and {\tt -v} are inherited from the original SATO solver,
+while {\tt -l} has been added in the *SAT embedded implementation of
+SATO. 
+
+The parameter {\tt -s<n>} allows you to choose among several splitting
+heuristics, i.e., the way SATO chooses the atom on which disjunctive
+branching occurs. The default value for this parameter is {\tt -s2},
+that is the well-known MOMS heuristic: the literal with maximum
+occurrences in clauses of minimum size is chosen. Although MOMS is by
+far the most effective heuristic among those available for
+propositional logics, the same might not be true for modal reasoning.  
+
+In the context of MOMS strategies ({\tt -s2} choice), it is
+possible to rank variables in several ways and, also, the choice of
+the splitting sign might be different. Parameter {\tt -l<n>} serves
+this purpose, in that it alters the way SATO weights the variables and
+chooses the splitting sign. The default is {\tt -l1}, i.e., atoms
+appearing often in binary clauses are preferred. If the most occurring
+sign is positive, then splitting happens with negative sign and
+vice versa. This has the clear purpose of maximizing unit propagations
+and thus cutting through the search tree quickly. Again, this is one of the
+most efficient heuristics in propositional logic, but this might not be true
+in the context of modal reasoning. This is why, besides the original
+one, we provide different ways to choose weight and sign. For example,
+with {\tt -l<n>} and {\tt n} in between $11$ and $13$, if the pool of
+selected clauses does not contain binary clauses, atoms are weighted
+according to their occurrence rate (not flatly, as it might
+happen in SATO!). Further improving on this line, {\tt -l21} emulates
+Boehm splitting heuristics, which ``prefers'' atoms occurring in
+binary clauses, but also considers occurrences in clauses of bigger
+size to break the ties. The sign is chosen accordingly to the highest
+number of occurrences, i.e., the sign is going to be positive if 
+occurrences of the chosen variable bear the positive sign more often
+than the negative sign, and vice versa.
+
+Finally, {\tt -v} parameters allows you to ``swap'' the splitting
+sign selected. The meaning of this option depends largely on the
+value of {\tt -s<n>} and {\tt -l<n>}. 
+By default, the first choice is ``false'', the second is ``true''. 
+
+\subsection{Propositional logic parameters} 
+\label{sub:proponly}
+
+The parameters described in this subsection affect the behavior of
+*SAT in a way that is not always harmless for reasoning in modal
+logics. They enforce optimizations that might lead SATO to generate incomplete
+sets of assignments. Since our algorithms rest on the assumption that all
+the propositional assignments can be possibly enumerated, enabling
+some of these options in the context of modal logics \textit{yields unsound
+decision procedures}. Why we decided to leave them in spite of this
+danger? Since *SAT features an internal space-efficient CNF conversion
+(see next section~\ref{sub:cnf_conv}),
+it might be used as a non-CNF propositional solver. In this case all
+the optimizations described in this subsection may come into play,
+effectively boosting up performance.
+The parameters we are now interested in are displayed in the *SAT help
+banner as follows:
+\begin{alltt}
+\scriptsize
+********** OPTIMIZATIONS (PROPOSITIONAL LOGIC ONLY!!)  **********
+   -p<n>    : enable pure literal detection     
+              n=1 on added variables only       
+              n=2 on any variable               
+   -g<n>    : enable propositional backjumping  
+   -h       : enable relaxation to horn clauses 
+\end{alltt}
+
+The {\tt -p<n>} switch enables pure literal detection and
+simplification. The default value for this option is {\tt 1}, i.e.,
+pure literal detection is performed on variables added by the
+optimized CNF conversion (which is also a default). Pure literal rule
+would be dangerous if applied to modal atoms, i.e., atoms masquerading a
+modal formula. For the sake of efficiency, it can be applied to
+propositional atoms. In particular, we chose to make it available on
+added variables, i.e., on variables added during a CNF conversion (see
+subsection~\ref{sub:cnf_conv} for more details). Anyway you do not need to
+alter {\tt -p<n>} value, because the optimized CNF conversion
+automatically changes the value of  {\tt -p<n>} to {\tt 1}.
+
+The second ({\tt -g<n>}) and third ({\tt -h}) 
+parameters \textit{must not} be enabled, except when
+using *SAT as a non-CNF propositional decision procedure. They are
+both disabled by default. {\tt -g<n>}
+enforces backjumping, with stored reason of length {\tt n} and this
+might disrupt *SAT behavior when backtracking from \textit{modal}
+inconsistencies. {\tt -h} enforces relaxation to horn clauses, i.e.,
+literals occurring in horn clauses only are never picked up,
+but horn clauses are subject to evaluation and unit propagation. When the
+original formula is reduced to a set of horn clauses without finding
+contradictions, SATO halts with a satisfiability result. This behavior
+actually prevents SATO from generating the complete sets of
+assignments.
+
+\subsection{CNF conversion parameters}
+\label{sub:cnf_conv}
+
+*SAT features an internal CNF conversion that allows it to deal with
+ modal formulae even if they are not in extended CNF. Internal
+ conversion is necessary since SATO deals with sets of clauses only.
+The help banner output is:
+\begin{alltt}
+\footnotesize
+********** INTERNAL CNF CONVERSION **********
+   -k       : choose the conversion type
+              n=0 standard CNF conversion
+              n=1 optimized CNF conversion (also triggers -n, -p1)
+   -n       : pushing down negations
+   -d       : don't prefer splitting on independent variables
+\end{alltt}
+
+The first parameter, {\tt -k<n>} allows you to choose among two
+different CNF conversions, a basic one ({\tt -k0}) and an
+optimized one ({\tt -k1}, the default). The optimized CNF conversion is essentially
+an implementation of what described in~\cite{pla86a}. 
+Both conversions try to keep the number of
+added variables small, the second one also keeps the clause count
+small. In order for it to be even more effective, {\tt -k1} triggers
+also {\tt -n} parameter (described next) and {\tt -p1}, with the
+result that the propositional search is less burdened by added
+variables.
+
+Parameter {\tt -n} forces *SAT to preprocess formulae by pushing down
+negations. The following rewrite rules are recursively applied:
+\[
+\begin{array}{rcl}
+\neg (\varphi \wedge \psi) & \Rightarrow & 
+	\neg \varphi \vee \neg \psi \\
+\neg (\varphi \vee \psi) & \Rightarrow & 
+	\neg \varphi \wedge \neg \psi \\
+\neg (\varphi \supset \psi) & \Rightarrow & 
+	\varphi \wedge \neg \psi\\
+\neg (\varphi \equiv \psi) & \Rightarrow & 
+	\varphi \equiv \neg \psi\\
+\neg \Diamond \varphi & \Rightarrow & \Box \neg \varphi 
+\end{array}
+\]
+By default, these rules are enforced because of the default value of
+the {\tt -k} switch. \textit{Independently} of
+the {\tt -n} switch, the following rules along with trivial propositional
+simplifications are recursively applied:
+\[
+\begin{array}{rcl}
+\Diamond \varphi & \Rightarrow & \neg \Box \neg \varphi \\
+\varphi \supset \psi & \Rightarrow & 	\neg \varphi \vee \psi
+\end{array}
+\]
+Both CNF conversions may
+deal with formulae that are not preprocessed with {\tt -n}, 
+but their results are
+somewhat less compact and they may end up confusing SATO a lot more
+than what is necessary.
+
+\subsection{Modal logic parameters}
+
+*SAT features some optimizations that speed up modal reasoning. The
+help banner describes them as follows:
+\begin{alltt}
+\footnotesize
+   -e<n>    : modal early pruning: 0 disable, 1 enable   	
+   -b<n>    : enable modal backjumping: 0 disable, 1 enable
+   -m<n>    : with n<=3 enable caching with a bit matrix:
+               n=1 enable caching of satisfiable subtests
+               n=2 enable caching of unsatisfiable subtests
+               n=3 enable both kinds of caching (2+1)
+              with n>3 enable caching with a hash table:
+               n=4 enable caching of satisfiable subtests
+               n=5 enable caching of unsatisfiable subtests
+               n=6 enable both kinds of caching
+   -w<n>    : cache memory size for a bit matrix (a multiple of 32 is good!)
+\end{alltt}
+Both {\tt -e} (enabled by default) and {\tt -b} (disabled by default) 
+try to reduce the search space spanned
+by SATO using information that comes from modal successors. Both
+heuristics might be used to limit \textit{trashing} of propositional
+assignments. Trashing happens when the propositional solver repeatedly
+discovers the same modal inconsistency, i.e., 
+when the propositional backtracking does not eliminate modally inconsistent
+kernel(s) from the assignments spanned. 
+Although modal early pruning and modal backjumping are not part of the
+core algorithm, using *SAT with none of these options yields
+an enormous increase in the CPU time needed to solve formula
+instances. 
+
+Modal
+early pruning ({\tt -e<n>}) is a lookahead technique that tries to
+eliminate modal inconsistencies as soon as they arise in the
+assignment built by the propositional solver. Before every disjunctive
+branch, the assignment so far generated is checked for modal
+inconsistencies. If the incomplete assignment is already inconsistent
+then backtracking occurs. 
+Modal backjumping techniques ({\tt -b<n>}) 
+come into play only after a modal inconsistency is discovered in a complete
+assignment. 
+%The inconsistent
+%assignment is searched for the biggest consistent kernel. The assignment is
+%checked following the propositional search stack order. In this way,
+%the biggest consistent kernel of the current assignment
+%corresponds to the shallower node of the
+%propositional search tree where an inconsistent modal atom was added.
+%All the subsequent nodes are irrelevant from a modal point of view,
+%since they elaborate on an inconsistent modal kernel. 
+%This strategy requires some consistency checks to be
+%performed using only parts of the complete (but otherwise
+%inconsistent) assignment. 
+The propositional solver is then forced to neglect trivially irrelevant nodes,
+i.e., nodes that were not responsible for the failure of the last
+consistency check. Such technique is simple and fast since, as opposed
+to {\tt -e}, it does not require any additional consistency check. 
+Although backjumping and early pruning could be both enabled in
+principle, it is not safe to do so in the current implementation of *SAT.
+
+Caching is a key feature when dealing with big formula instances,
+where the same subproblem might occur more than once. Currently *SAT
+features two forms of caching:
+\begin{itemize}
+\item
+a \textit{subset-matching} cache, i.e., *SAT can query for subsets
+(supersets) of the stored sets of formulas. In the current
+implementation, this cache (a bit matrix) is also bounded in
+size: only some results are stored and when the cache is full,
+former results are discharged using a FIFO politic.
+\item
+an \textit{exact-matching} cache, i.e. *SAT is ensured not to repeat
+the very same test over and over again. In the current implementation,
+this cache (a hash table) is unbounded in size: all the results are
+stored and the space allotted is not guaranteed to stay compact.
+\end{itemize}
+The default choice is {\tt -m3}, i.e., bounded subset matching cache
+storing both satisfiable and unsatisfiable subtests.
+The choice of a size bounded cache as a default
+rests on the fact that caching partial results in many interesting
+modal logics requires exponential space in the worst case. *SAT
+bounded caching mechanism guarantees that space requirements grow polynomially
+with the input size. The assumption is that partial results are reused only
+``locally'', i.e., the more the assignments generated by the
+propositional solver differ, the less the probability of
+previously cached results being reused. In all the cases in which
+this is true, a cache that forgets results with a FIFO 
+(First In, First Out) mechanism can effectively trim down the search
+time. By default, *SAT forgets the oldest result as soon as the space
+alloted is exhausted, and it keeps forgetting previously cached
+results in the same order in which they were stored.
+The actual size of the cache
+depends on the command line parameter {\tt -w<n>}. Tuning the value of
+the cache size is a matter of finding the right balance between access
+time and cache persistence. A small cache is faster but less
+persistent, since it quickly overwrites former results as new ones
+are pumped in. A big cache is slower but more persistent, since old
+results have more chance to survive. 
+The parameters {\tt -m<n>} and {\tt -w<n>} make sense 
+with the executables {\tt kSAT, kPROVE, ta4eSAT} since
+they work for modal logic $K$. The
+executable {\tt eSAT} features its own caching algorithm
+(appropriate for classical logics). In {\tt eSAT} caching is not an
+option since it is part of the algorithm. 
+As a consequence, {\tt -m<n>} will not
+have any impact on the behavior of {\tt eSAT}.
+
+\subsection{Miscellanea}
+\label{sub:misc}
+
+This section describes the parameters controlling miscellaneous
+features of *SAT. The help banner describes them as:
+\begin{alltt}
+\footnotesize
+********** MISCELLANEA **********
+   -r<n>    : determines output level:
+               n=0 single line data without comments
+               n=1    "     "  "   with comments
+               n=2 verbose output
+   -o<sec>  : enable a timeout (disable any timeout if 0)  
+\end{alltt}
+The option {\tt -r} influences the form in which *SAT outputs its
+result. As anticipated in section~\ref{sec:first} *SAT can provide the
+user with several kinds of output. A single line output ({\tt -r0}) that
+lists the satisfiability result ({\tt 0} or {\tt 1}) followed by some
+of the data recorded during the execution of *SAT (e.g., decision
+time, recursive calls, allocated memory). With {\tt -r1} (the default)
+a line of comments appears before the data is displayed.
+With {\tt -r2} switch it is
+possible to obtain longer and more informative reports of *SAT
+runs. Besides comments accompanying every data, the ``rich'' report
+includes time for parsing, preprocessing and building the internal
+data structure, which are not present in the ``short''
+description. If *SAT reaches a time out,
+the report will be printed with the data recorded before the timeout
+was reached.
+
+The option {\tt -o<n>} sets a timeout in seconds of CPU time. The
+default value is {\tt 1000}, i.e., about twenty minutes of CPU
+time. The timeout limits the internal build time (and thus CNF conversion)
+and the core decision time. Parsing, preprocessing and normalization
+times are not taken in account.  
+
+\section{Output data}
+\label{sec:output}
+
+When *SAT terminates the decision process, it prompts the user with
+a report, possibly coming in different forms (see
+section~\ref{sub:misc}) containing data about the resources allocated
+(time, space) and data about the algorithm (e.g. number of consistency checks,
+disjunctive branches, unit resolutions).
+In the following, the output data is described in the same order in
+which it is displayed. Notice
+that display order in the short (single and double line) 
+output corresponds to the rich output.
+For the sake of clarity, output information is grouped as follows:
+\begin{description}
+\item{Result:} in the short output either {\tt 0} (unsatisfiable) or
+{\tt 1} (satisfiable). In the rich output report the result is
+described lengthy
+(e.g. {\tt The formula was satisfiable}).
+\item{TIMINGS:} {\tt Parse
+time} is the time taken to read and parse the input formula. {\tt
+Preprocessing time} includes time needed for input normalization,
+i.e. (possible) conversion of binary formula trees into n-ary ones,
+pushing down of negations, recursive application of the rule 
+$\Diamond \varphi  \Rightarrow \neg \Box \neg \varphi$
+(see~\ref{sub:cnf_conv}). If the executable is
+{\tt ta4eSAT} then {\tt Translate time} accounts for the time taken in
+translating a problem from logic $E$ to $K(2)$. {\tt Build time} includes
+the time needed to build the internal data structure, to 
+replace modal formulae with atoms, to build the cross-reference
+table and to initialize the SAT algorithm (CNF conversion is part
+of this process). Finally, {\tt Decision time} is the time taken to
+solve the formula. In the single-line output description, this time
+and the build time are the only values displayed. 
+\item{GENERAL:} {\tt Consistency checks} is the number of modal
+consistency checks performed by *SAT, {\tt Failed consistency checks}
+is the fraction of such checks that failed, i.e., forced the
+propositional solver to look back for another assignment. If early pruning
+is enabled, {\tt Early pruning (calls)} accounts for the
+number of early consistency checks, {\tt
+Early pruning (backtracks)} is the fraction of such checks that was
+inconsistent, i.e. the number of times that early pruning 
+prevented the propositional solver from exploring
+irrelevant branches.
+\item{DAVIS PUTNAM:} {\tt Unit propagations} accounts for the total
+number of unit resolutions (unit clauses detected and resolved). {\tt
+Pure literals} accounts for the total number of applications of the
+pure literal rule. In modal logics, this must be always {\tt 0} unless
+optimized CNF conversion (option {\tt -k1}) is selected. {\tt Splits}
+is the total number of disjunctive branches performed by the propositional
+solver, {\tt on modal atoms} is the fraction of such branches that
+happened on modal formulae, {\tt on added var.} is the fraction of
+such branches that happened on variables added by the CNF conversion
+(this might be non-zero even if {\tt -d} parameter is not set).
+{\tt Assignments found} is the total number of assignments enumerated
+by the propositional solver. {\tt Backtracks} accounts for the total
+number of \textit{propositional} backtracks, i.e., backtracks caused
+by some purely propositional inconsistency.
+\item{CNF CONVERSION:} {\tt Added variables} is the number of
+variables added by the CNF conversion.
+\item{CACHING:} caching data is displayed only when some kind of
+caching (option {\tt -m<n>}) is enabled. Caching may concern
+satisfiability results or unsatisfiability results (dependencies).
+In display order, {\tt Cache accesses} is the number of times that the
+cache for satisfiability results is accessed, {\tt Cache
+successes} is the fraction of such accesses that was successful. {\tt
+Items stored} is the \textit{total} number of results stored. Since
+the cache is bounded some of these results were possibly trashed
+(i.e., overwritten). {\tt trashing ratio} gives the ratio between
+trashed assignments and cache size. The higher the trashing ratio, the
+smaller the cache persistence and vice versa. {\tt Total search time}
+and {\tt Total store time} give the total time spent for searching and
+storing satisfiable subtests, respectively. {\tt Dependencies tried}
+is the number of times that the cache for unsatisfiability results is
+accessed, {\tt Dependencies found} is the fraction of such accesses
+that was successful. 
+As in the case of
+satisfiability caching, {\tt Dependencies stored} and {\tt trashing
+ratio} are, respectively,  the number of unsatisfiability results
+stored and the measure of dependency cache persistence.
+{\tt Total search time}
+and {\tt Total store time} give the total time spent for searching and
+storing dependencies, respectively.
+\item{MEMORY:} *SAT decides satisfiability of a formula by implicitly
+spanning a modal structure in a depth-first fashion. The relevant
+parameter is thus the peak allocation of memory, i.e. the maximum
+memory allocated for SATO data structures on any search path. In
+display order, this is the first data of this section. If caching is
+enabled then also the space alloted for caching partial results is
+displayed.
+\end{description}
+
+\bibliographystyle{named}
+\bibliography{bib}
+
+\end{document}

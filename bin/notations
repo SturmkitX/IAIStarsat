@@ -1,0 +1,7 @@
+C0 = White(A)
+C1 = White(B)
+....
+
+R0 = A knows
+R1 = B knows
+

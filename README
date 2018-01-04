@@ -1,0 +1,27 @@
+Welcome to *SAT 1.2, a platform for experimenting with SAT-based
+procedures!
+Copyright (C) 1999 Armando Tacchella
+
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 2 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+long with this program; if not, write to the Free Software
+Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+
+For problems and questions about *SAT contact:
+     Armando Tacchella
+     MRG-DIST University of Genova
+     V.le Causa 13
+     16142 GENOVA (ITALY)
+     tac@mrg.dist.unige.it
+
+To learn how to install, configure and run your own copy of *SAT
+please refer to the manual file (manual.ps) contained in the distribution.  

@@ -1,0 +1,10 @@
+#! /bin/sh
+# GLU build and install script
+# by Armando Tacchella, January 2000
+
+echo Making and installing GLU libraries...
+cd ./glu-1.3
+./configure --prefix=.. --enable-gcc --with-comp-mode=optimized
+make 
+make install
+echo Done.

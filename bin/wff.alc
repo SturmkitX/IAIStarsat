@@ -1,0 +1,2 @@
+(NOT (IMP (AND (ALL R0 (IMP C0 C1)) (ALL R0 C0)) (ALL R0 C1)))
+

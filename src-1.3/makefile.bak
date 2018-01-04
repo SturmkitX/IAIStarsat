@@ -1,0 +1,323 @@
+# *SAT 1.3 platform for experimenting with SAT-based procedures
+# Copyright (C) 1999 Armando Tacchella
+#
+#     This program is free software; you can redistribute it and/or modify
+#     it under the terms of the GNU General Public License as published by
+#     the Free Software Foundation; either version 2 of the License, or
+#     (at your option) any later version.
+#
+#     This program is distributed in the hope that it will be useful,
+#     but WITHOUT ANY WARRANTY; without even the implied warranty of
+#     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#     GNU General Public License for more details.
+#
+#     You should have received a copy of the GNU General Public License
+#     along with this program; if not, write to the Free Software
+#     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+#
+#     For problems and questions about *SAT contact:
+#
+#     Armando Tacchella
+#     MRG-DIST University of Genova
+#     V.le Causa 13
+#     16142 GENOVA (ITALY)
+#     tac@mrg.dist.unige.it
+
+# ---------------------------------------------------------------------------
+# GLOBAL SETTINGS (Do not change this!)
+# ---------------------------------------------------------------------------
+SHELL = /bin/sh
+
+# ---------------------------------------------------------------------------
+# C SETTINGS (Do not change this!)
+# ---------------------------------------------------------------------------
+CC = gcc
+BASE_CFLAGS =  -O2 -pedantic -I../include -L../lib
+#BASE_CFLAGS =  -g3 -Wall -pedantic -I../include -L../lib
+LIB = -lfl -lglu -lm
+
+# ---------------------------------------------------------------------------
+# LEXER & PARSER (Do not change this!)
+# ---------------------------------------------------------------------------
+YACC = bison
+YFLAGS = -d -y
+LEX = flex
+
+# ---------------------------------------------------------------------------
+# INPUT SYNTAX (comment in/out PARSER, LEXER and SYNTAX at the same time!)
+# ---------------------------------------------------------------------------
+
+# Parser & Lexer for KsatLisp/KRIS syntax
+PARSER = alc.y
+LEXER = alc.lex
+SYNTAX = -DNARY
+
+# Parser & Lexer for KsatC syntax
+#PARSER = c.y
+#LEXER = c.lex
+#SYNTAX = -DNARY
+
+# Parser & Lexer for LWB syntax
+#PARSER = lwb.y
+#LEXER = lwb.lex
+#SYNTAX = -DBARY
+
+# Parser & Lexer for TPTP syntax
+#PARSER = tptp.y
+#LEXER = tptp.lex
+#SYNTAX = -DBARY -DPURGE_COMMENTS
+
+# ---------------------------------------------------------------------------
+# DIRECTIVES (choose only one value for CFLAGS)
+# ---------------------------------------------------------------------------
+
+# RGFK - Random generated formulae (including Tableaux 99/2000 formulae)
+CFLAGS =  -DOPTIMIZE -DTRIE_UNREV $(BASE_CFLAGS)
+
+# HGFK - Hand generated formulae (Tableaux 98 formulae)
+#CFLAGS = -DSORT_CLAUSES -DOPTIMIZE $(BASE_CFLAGS)
+
+# Bare bones
+#CFLAGS = $(BASE_CFLAGS)
+
+# ---------------------------------------------------------------------------
+# CODE ORGANIZATION (Do not change this!)
+# ---------------------------------------------------------------------------
+
+BASE_SRCS = fnode.c y.tab.c lex.yy.c dag.c monitor.c statistics.c dp_sat.c sato.c trie.c table.c set.c
+BASE_OBJS = fnode.o y.tab.o lex.yy.o dag.o monitor.o statistics.o dp_sat.o sato.o trie.o table.o set.o
+
+# ---------------------------------------------------------------------------
+# TARGET EXECUTABLE (comment in/out SRCS, OBJS, LOGIC, EXEC at the same time)
+# ---------------------------------------------------------------------------
+
+#KSAT with DP (logic K)
+SRCS = $(BASE_SRCS) kdp.c main-dp.c
+OBJS = $(BASE_OBJS) kdp.o
+LOGIC = -DKSAT 
+EXEC = kSAT
+
+# KPROVE with DP (logic K)
+#SRCS = $(BASE_SRCS) kdp.c main-dp.c
+#OBJS = $(BASE_OBJS) kdp.o
+#LOGIC = -DKSAT -DNEGATE
+#EXEC = kPROVE
+
+# ESAT with DP (logic E)
+#SRCS = $(BASE_SRCS) edp.c main-dp.c
+#OBJS = $(BASE_OBJS) edp.o
+#LOGIC = -DESAT 
+#EXEC = eSAT
+
+# ESAT with DP (logic E - translational approach)
+#SRCS = $(BASE_SRCS) kdp.c main-dp.c
+#OBJS = $(BASE_OBJS) kdp.o
+#LOGIC = -DTRANSLATE_TO_K
+#EXEC = ta4eSAT
+
+# ===========================================================================
+# NOTHING TO BE CHANGED BELOW THIS POINT!!!
+# ===========================================================================
+
+# ---------------------------------------------------------------------------
+# RULES 
+# ---------------------------------------------------------------------------
+
+#The decision procedures
+$(EXEC) : $(OBJS) main-dp.c
+	$(CC) $(SYNTAX) $(MODIFIERS) $(LOGIC) $(CFLAGS) $(OBJS) main-dp.c $(LIB) -o $(EXEC)
+
+y.tab.c : $(PARSER)
+	$(YACC) $(YFLAGS) $(PARSER)
+lex.yy.c: $(LEXER)
+	$(LEX) $(LEXER)
+
+# CLEAN FUNCTIONS
+clean:
+	rm -f *.tab.* *.yy.c *.o *~ *SAT *PROVE
+
+# ---------------------------------------------------------------------------
+# SETTING DEPENDENCIES (Do not change this!)
+# ---------------------------------------------------------------------------
+depend: y.tab.c lex.yy.c 
+	makedepend -- $(CFLAGS) -- $(SRCS) --
+
+# DO NOT DELETE THIS LINE -- make depend depends on it.
+
+fnode.o: fnode.h /usr/include/malloc.h
+fnode.o: /usr/lib/gcc-lib/i486-linux/2.7.2.3/include/stddef.h
+fnode.o: ../include/util.h /usr/include/stdio.h /usr/include/libio.h
+fnode.o: /usr/include/features.h /usr/include/sys/cdefs.h
+fnode.o: /usr/include/gnu/stubs.h /usr/include/_G_config.h
+fnode.o: /usr/include/gnu/types.h
+fnode.o: /usr/lib/gcc-lib/i486-linux/2.7.2.3/include/stdarg.h
+fnode.o: /usr/include/stdio_lim.h /usr/include/ctype.h /usr/include/endian.h
+fnode.o: /usr/include/bytesex.h /usr/include/math.h /usr/include/huge_val.h
+fnode.o: /usr/include/mathcalls.h
+fnode.o: /usr/lib/gcc-lib/i486-linux/2.7.2.3/include/float.h
+y.tab.o: fnode.h /usr/include/malloc.h
+y.tab.o: /usr/lib/gcc-lib/i486-linux/2.7.2.3/include/stddef.h
+y.tab.o: ../include/util.h /usr/include/stdio.h /usr/include/libio.h
+y.tab.o: /usr/include/features.h /usr/include/sys/cdefs.h
+y.tab.o: /usr/include/gnu/stubs.h /usr/include/_G_config.h
+y.tab.o: /usr/include/gnu/types.h
+y.tab.o: /usr/lib/gcc-lib/i486-linux/2.7.2.3/include/stdarg.h
+y.tab.o: /usr/include/stdio_lim.h /usr/include/ctype.h /usr/include/endian.h
+y.tab.o: /usr/include/bytesex.h /usr/include/math.h /usr/include/huge_val.h
+y.tab.o: /usr/include/mathcalls.h
+y.tab.o: /usr/lib/gcc-lib/i486-linux/2.7.2.3/include/float.h
+lex.yy.o: /usr/include/stdio.h /usr/include/libio.h /usr/include/features.h
+lex.yy.o: /usr/include/sys/cdefs.h /usr/include/gnu/stubs.h
+lex.yy.o: /usr/include/_G_config.h /usr/include/gnu/types.h
+lex.yy.o: /usr/lib/gcc-lib/i486-linux/2.7.2.3/include/stddef.h
+lex.yy.o: /usr/lib/gcc-lib/i486-linux/2.7.2.3/include/stdarg.h
+lex.yy.o: /usr/include/stdio_lim.h /usr/include/string.h fnode.h
+lex.yy.o: /usr/include/malloc.h ../include/util.h /usr/include/ctype.h
+lex.yy.o: /usr/include/endian.h /usr/include/bytesex.h /usr/include/math.h
+lex.yy.o: /usr/include/huge_val.h /usr/include/mathcalls.h
+lex.yy.o: /usr/lib/gcc-lib/i486-linux/2.7.2.3/include/float.h y.tab.h
+lex.yy.o: /usr/include/stdlib.h /usr/include/sys/types.h /usr/include/time.h
+lex.yy.o: /usr/include/sys/select.h /usr/include/selectbits.h
+lex.yy.o: /usr/include/alloca.h
+dag.o: dag.h ../include/util.h /usr/include/stdio.h /usr/include/libio.h
+dag.o: /usr/include/features.h /usr/include/sys/cdefs.h
+dag.o: /usr/include/gnu/stubs.h /usr/include/_G_config.h
+dag.o: /usr/include/gnu/types.h
+dag.o: /usr/lib/gcc-lib/i486-linux/2.7.2.3/include/stddef.h
+dag.o: /usr/lib/gcc-lib/i486-linux/2.7.2.3/include/stdarg.h
+dag.o: /usr/include/stdio_lim.h /usr/include/ctype.h /usr/include/endian.h
+dag.o: /usr/include/bytesex.h /usr/include/math.h /usr/include/huge_val.h
+dag.o: /usr/include/mathcalls.h
+dag.o: /usr/lib/gcc-lib/i486-linux/2.7.2.3/include/float.h ../include/array.h
+dag.o: ../include/list.h ../include/graph.h ../include/st.h fnode.h
+dag.o: /usr/include/malloc.h addglu.h
+monitor.o: monitor.h /usr/include/stdio.h /usr/include/libio.h
+monitor.o: /usr/include/features.h /usr/include/sys/cdefs.h
+monitor.o: /usr/include/gnu/stubs.h /usr/include/_G_config.h
+monitor.o: /usr/include/gnu/types.h
+monitor.o: /usr/lib/gcc-lib/i486-linux/2.7.2.3/include/stddef.h
+monitor.o: /usr/lib/gcc-lib/i486-linux/2.7.2.3/include/stdarg.h
+monitor.o: /usr/include/stdio_lim.h /usr/include/malloc.h ../include/util.h
+monitor.o: /usr/include/ctype.h /usr/include/endian.h /usr/include/bytesex.h
+monitor.o: /usr/include/math.h /usr/include/huge_val.h
+monitor.o: /usr/include/mathcalls.h
+monitor.o: /usr/lib/gcc-lib/i486-linux/2.7.2.3/include/float.h
+statistics.o: statistics.h ../include/util.h /usr/include/stdio.h
+statistics.o: /usr/include/libio.h /usr/include/features.h
+statistics.o: /usr/include/sys/cdefs.h /usr/include/gnu/stubs.h
+statistics.o: /usr/include/_G_config.h /usr/include/gnu/types.h
+statistics.o: /usr/lib/gcc-lib/i486-linux/2.7.2.3/include/stddef.h
+statistics.o: /usr/lib/gcc-lib/i486-linux/2.7.2.3/include/stdarg.h
+statistics.o: /usr/include/stdio_lim.h /usr/include/ctype.h
+statistics.o: /usr/include/endian.h /usr/include/bytesex.h
+statistics.o: /usr/include/math.h /usr/include/huge_val.h
+statistics.o: /usr/include/mathcalls.h
+statistics.o: /usr/lib/gcc-lib/i486-linux/2.7.2.3/include/float.h
+statistics.o: ../include/array.h ../include/list.h ../include/graph.h
+statistics.o: ../include/var_set.h dag.h ../include/st.h fnode.h
+statistics.o: /usr/include/malloc.h addglu.h common_sat.h
+dp_sat.o: dp_sat.h ../include/util.h /usr/include/stdio.h
+dp_sat.o: /usr/include/libio.h /usr/include/features.h
+dp_sat.o: /usr/include/sys/cdefs.h /usr/include/gnu/stubs.h
+dp_sat.o: /usr/include/_G_config.h /usr/include/gnu/types.h
+dp_sat.o: /usr/lib/gcc-lib/i486-linux/2.7.2.3/include/stddef.h
+dp_sat.o: /usr/lib/gcc-lib/i486-linux/2.7.2.3/include/stdarg.h
+dp_sat.o: /usr/include/stdio_lim.h /usr/include/ctype.h /usr/include/endian.h
+dp_sat.o: /usr/include/bytesex.h /usr/include/math.h /usr/include/huge_val.h
+dp_sat.o: /usr/include/mathcalls.h
+dp_sat.o: /usr/lib/gcc-lib/i486-linux/2.7.2.3/include/float.h
+dp_sat.o: ../include/array.h ../include/list.h ../include/graph.h
+dp_sat.o: ../include/st.h dag.h fnode.h /usr/include/malloc.h addglu.h
+dp_sat.o: common_sat.h satotrie.h monitor.h
+sato.o: satotrie.h /usr/include/stdio.h /usr/include/libio.h
+sato.o: /usr/include/features.h /usr/include/sys/cdefs.h
+sato.o: /usr/include/gnu/stubs.h /usr/include/_G_config.h
+sato.o: /usr/include/gnu/types.h
+sato.o: /usr/lib/gcc-lib/i486-linux/2.7.2.3/include/stddef.h
+sato.o: /usr/lib/gcc-lib/i486-linux/2.7.2.3/include/stdarg.h
+sato.o: /usr/include/stdio_lim.h dag.h ../include/util.h /usr/include/ctype.h
+sato.o: /usr/include/endian.h /usr/include/bytesex.h /usr/include/math.h
+sato.o: /usr/include/huge_val.h /usr/include/mathcalls.h
+sato.o: /usr/lib/gcc-lib/i486-linux/2.7.2.3/include/float.h
+sato.o: ../include/array.h ../include/list.h ../include/graph.h
+sato.o: ../include/st.h fnode.h /usr/include/malloc.h addglu.h common_sat.h
+sato.o: monitor.h
+trie.o: satotrie.h /usr/include/stdio.h /usr/include/libio.h
+trie.o: /usr/include/features.h /usr/include/sys/cdefs.h
+trie.o: /usr/include/gnu/stubs.h /usr/include/_G_config.h
+trie.o: /usr/include/gnu/types.h
+trie.o: /usr/lib/gcc-lib/i486-linux/2.7.2.3/include/stddef.h
+trie.o: /usr/lib/gcc-lib/i486-linux/2.7.2.3/include/stdarg.h
+trie.o: /usr/include/stdio_lim.h dag.h ../include/util.h /usr/include/ctype.h
+trie.o: /usr/include/endian.h /usr/include/bytesex.h /usr/include/math.h
+trie.o: /usr/include/huge_val.h /usr/include/mathcalls.h
+trie.o: /usr/lib/gcc-lib/i486-linux/2.7.2.3/include/float.h
+trie.o: ../include/array.h ../include/list.h ../include/graph.h
+trie.o: ../include/st.h fnode.h /usr/include/malloc.h addglu.h common_sat.h
+trie.o: monitor.h
+table.o: table.h /usr/include/malloc.h
+table.o: /usr/lib/gcc-lib/i486-linux/2.7.2.3/include/stddef.h
+table.o: ../include/util.h /usr/include/stdio.h /usr/include/libio.h
+table.o: /usr/include/features.h /usr/include/sys/cdefs.h
+table.o: /usr/include/gnu/stubs.h /usr/include/_G_config.h
+table.o: /usr/include/gnu/types.h
+table.o: /usr/lib/gcc-lib/i486-linux/2.7.2.3/include/stdarg.h
+table.o: /usr/include/stdio_lim.h /usr/include/ctype.h /usr/include/endian.h
+table.o: /usr/include/bytesex.h /usr/include/math.h /usr/include/huge_val.h
+table.o: /usr/include/mathcalls.h
+table.o: /usr/lib/gcc-lib/i486-linux/2.7.2.3/include/float.h
+table.o: ../include/sparse_int.h ../include/sparse.h
+set.o: set.h /usr/include/limits.h /usr/include/features.h
+set.o: /usr/include/sys/cdefs.h /usr/include/gnu/stubs.h
+set.o: /usr/include/posix1_lim.h /usr/include/local_lim.h
+set.o: /usr/include/linux/limits.h /usr/include/posix2_lim.h
+set.o: /usr/include/math.h /usr/include/huge_val.h /usr/include/mathcalls.h
+set.o: /usr/lib/gcc-lib/i486-linux/2.7.2.3/include/float.h ../include/util.h
+set.o: /usr/include/stdio.h /usr/include/libio.h /usr/include/_G_config.h
+set.o: /usr/include/gnu/types.h
+set.o: /usr/lib/gcc-lib/i486-linux/2.7.2.3/include/stddef.h
+set.o: /usr/lib/gcc-lib/i486-linux/2.7.2.3/include/stdarg.h
+set.o: /usr/include/stdio_lim.h /usr/include/ctype.h /usr/include/endian.h
+set.o: /usr/include/bytesex.h ../include/var_set.h ../include/st.h dp_sat.h
+set.o: ../include/array.h ../include/list.h ../include/graph.h dag.h fnode.h
+set.o: /usr/include/malloc.h addglu.h common_sat.h satotrie.h monitor.h
+set.o: statistics.h
+kdp.o: kdp.h dp_sat.h ../include/util.h /usr/include/stdio.h
+kdp.o: /usr/include/libio.h /usr/include/features.h /usr/include/sys/cdefs.h
+kdp.o: /usr/include/gnu/stubs.h /usr/include/_G_config.h
+kdp.o: /usr/include/gnu/types.h
+kdp.o: /usr/lib/gcc-lib/i486-linux/2.7.2.3/include/stddef.h
+kdp.o: /usr/lib/gcc-lib/i486-linux/2.7.2.3/include/stdarg.h
+kdp.o: /usr/include/stdio_lim.h /usr/include/ctype.h /usr/include/endian.h
+kdp.o: /usr/include/bytesex.h /usr/include/math.h /usr/include/huge_val.h
+kdp.o: /usr/include/mathcalls.h
+kdp.o: /usr/lib/gcc-lib/i486-linux/2.7.2.3/include/float.h ../include/array.h
+kdp.o: ../include/list.h ../include/graph.h ../include/st.h dag.h fnode.h
+kdp.o: /usr/include/malloc.h addglu.h common_sat.h satotrie.h monitor.h set.h
+kdp.o: /usr/include/limits.h /usr/include/posix1_lim.h
+kdp.o: /usr/include/local_lim.h /usr/include/linux/limits.h
+kdp.o: /usr/include/posix2_lim.h ../include/var_set.h statistics.h
+main-dp.o: /usr/include/stdio.h /usr/include/libio.h /usr/include/features.h
+main-dp.o: /usr/include/sys/cdefs.h /usr/include/gnu/stubs.h
+main-dp.o: /usr/include/_G_config.h /usr/include/gnu/types.h
+main-dp.o: /usr/lib/gcc-lib/i486-linux/2.7.2.3/include/stddef.h
+main-dp.o: /usr/lib/gcc-lib/i486-linux/2.7.2.3/include/stdarg.h
+main-dp.o: /usr/include/stdio_lim.h /usr/include/sys/time.h
+main-dp.o: /usr/include/time.h /usr/include/sys/select.h
+main-dp.o: /usr/include/selectbits.h /usr/include/timebits.h
+main-dp.o: /usr/include/sys/resource.h /usr/include/resourcebits.h
+main-dp.o: /usr/include/asm/resource.h /usr/include/signal.h
+main-dp.o: /usr/include/sigset.h /usr/include/signum.h
+main-dp.o: /usr/include/sigaction.h /usr/include/sigcontext.h
+main-dp.o: /usr/include/asm/sigcontext.h /usr/include/sigstack.h fnode.h
+main-dp.o: /usr/include/malloc.h ../include/util.h /usr/include/ctype.h
+main-dp.o: /usr/include/endian.h /usr/include/bytesex.h /usr/include/math.h
+main-dp.o: /usr/include/huge_val.h /usr/include/mathcalls.h
+main-dp.o: /usr/lib/gcc-lib/i486-linux/2.7.2.3/include/float.h dag.h
+main-dp.o: ../include/array.h ../include/list.h ../include/graph.h
+main-dp.o: ../include/st.h addglu.h dp_sat.h common_sat.h satotrie.h
+main-dp.o: monitor.h statistics.h ../include/var_set.h table.h
+main-dp.o: ../include/sparse_int.h ../include/sparse.h set.h
+main-dp.o: /usr/include/limits.h /usr/include/posix1_lim.h
+main-dp.o: /usr/include/local_lim.h /usr/include/linux/limits.h
+main-dp.o: /usr/include/posix2_lim.h

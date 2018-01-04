@@ -1,0 +1,12 @@
+(AND (ALL R0 (IMP (NOT C0) (ALL R1 (NOT C0))))
+    (ALL R0 (IMP (NOT C0) (ALL R2 (NOT C0))))
+    (ALL R0 (IMP (NOT C0) (ALL R3 (NOT C0))))
+    (ALL R0 (ALL R1 (NOT (IMP C0 C1))))
+    (ALL R0 (ALL R2 (NOT (IMP C0 C2))))
+    (ALL R0 (ALL R3 (NOT (IMP C0 C3))))
+    (ALL R0 (NOT (ALL R1 C1)))
+    (ALL R0 (NOT (ALL R2 C2)))
+    (ALL R0 (NOT (ALL R3 C3)))
+    (NOT (ALL R0 C0)) 
+)
+

@@ -1,0 +1,99 @@
+#!/usr/bin/perl
+
+#A perl script for running kSAT on Tableaux2000 reference problems
+#
+#by Armando Tacchella Jan 2000
+
+#===============COMMAND LINE ARGUMENTS===============
+
+# $dir_problems : the directory containing the samples
+
+#===============GLOBAL PARAMETERS===============
+
+$tmp_file = "kSAT-out.tmp"; # Temporary output for kSAT
+$pre_file = "kSAT";         # Statistics files prefix
+
+#===============COMMAND LINE PARSING===============
+
+#-----If the command line is empty then give some help
+if ($#ARGV == -1) {
+    print "USAGE:\n";
+    print "run_tests <dirP>\n\n";
+    print "Where: <dirP> is the directory containing the problems\n\n";
+    exit(0);
+}
+
+#-----Instantiating local copies of command line parameters
+my($dir_problems) = @ARGV;
+
+
+#===============UNDERSTANDING PROBLEM CLASSES===============
+
+#-----Open $dir_problems into an array
+opendir(DIRPB, $dir_problems);
+@problems = readdir(DIRPB);
+closedir(DIRPB);
+
+
+#-----How many different classes and 
+#-----how many problems for each class
+for ($i = 2; $i <= $#problems; $i++) {
+    if ($problems[$i] =~ m/(.*)\.([0-9]+)/) {
+        if (exists($pb_classes{$1})) {
+            # Possibly update the number of samples
+            if ($pb_classes{$1} < $2) {
+                $pb_classes{$1} = $2;
+            }
+        } else {
+            # Get the problem class
+            @pb_classes = %pb_classes;
+            push(@pb_classes, $1);
+            push(@pb_classes, $2);
+            %pb_classes = @pb_classes;
+        }
+    }
+}
+
+#===============RUNNING TESTS===============
+
+print "% Prover *SAT\n";
+print "% Settings -o1200\n";
+print "t 120000\n";
+print "m 250\n";
+
+#-----For each problem class
+foreach $one_pb_class (keys %pb_classes) {
+            
+    #-----For each sample in the class
+    for ($i = 1; $i <= $pb_classes{$one_pb_class}; $i++) {
+	
+	#-----Run kSAT on the sample
+	system "src-1.3/kSAT -o1200 $dir_problems/$one_pb_class.$i >$tmp_file 2>/dev/null";
+	
+	#-----Retrieve kSAT output data
+	open(TMPFILE, "<$tmp_file") ||
+	    die "Cannot open $tmp_file\n";
+	@tmp_file_rows = <TMPFILE>;
+	close(TMPFILE);
+	
+	print "i $one_pb_class.$i ";
+	$tmp_file_rows[1] =~ s/,|sec//g; 
+	@one_line = split(" ",$tmp_file_rows[1]);
+	
+	$time = $one_line[1] + $one_line[2] * 100;
+	printf("%.0f ", $time);
+	if ($one_line[0] == -1) {
+	    print "T\n";
+	} elsif ($one_line[0] == 1) {
+	    print "S\n";
+	} else {
+	    print "U\n";
+	}
+			  
+                
+    } # End of the loop on samples
+            
+} # End of the loop on problem classes
+        
+            
+unlink("kSAT-out.tmp");            
